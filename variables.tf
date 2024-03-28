@@ -3,7 +3,10 @@ variable "ami" {
   type        = string
   default     = ""
 }
-
+variable "ignore_instance_type_change" {
+  type    = bool
+  default = true
+}
 variable "core_count" {
   type        = number
   description = "custom vcpu count"
