@@ -4,9 +4,15 @@ variable "ami" {
   default     = ""
 }
 
-variable "cpu_core_count" {
+variable "core_count" {
   type        = number
   description = "custom vcpu count"
+  default     = null
+}
+
+variable "threads_per_core" {
+  type        = number
+  description = "custom threads count"
   default     = null
 }
 
