@@ -74,7 +74,7 @@ resource "aws_instance" "this" {
     tags        = var.tags
   }
  lifecycle {
-    ignore_changes = var.ignore_instance_type_change ? ["instance_type"] : null
+    ignore_changes = var.ignore_instance_type_change ? ["instance_type"] : []
   }
   metadata_options {
     http_endpoint               = "enabled"
