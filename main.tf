@@ -51,7 +51,7 @@ resource "aws_instance" "this" {
   count                       = local.enabled ? 1 : 0
   ami                         = var.ami != "" ? var.ami : data.aws_ami.search.id
   associate_public_ip_address = var.associate_public_ip_address
-  cpu_options                 = var.cpu_core_count
+  
   disable_api_termination     = var.disable_api_termination
   ebs_optimized               = var.ebs_optimized
   iam_instance_profile        = var.instance_profile
@@ -62,6 +62,10 @@ resource "aws_instance" "this" {
   vpc_security_group_ids      = var.vpc_security_group_ids
   key_name                    = var.key_name
   user_data                   = local.user_data
+  cpu_options {
+    core_count       = var.core_count
+    threads_per_core = var.threads_per_core
+  }
 
 
   root_block_device {
