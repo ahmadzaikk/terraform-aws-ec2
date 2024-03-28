@@ -63,8 +63,8 @@ resource "aws_instance" "this" {
   key_name                    = var.key_name
   user_data                   = local.user_data
   cpu_options {
-    core_count       = var.core_count
-    threads_per_core = var.threads_per_core
+    core_count       = var.vcpu_core_count
+    threads_per_core = var.vcpu_threads_per_core
   }
 
 
