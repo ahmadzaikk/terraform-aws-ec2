@@ -7,7 +7,7 @@ variable "ami" {
 variable "cpu_core_count" {
   type        = number
   description = "custom vcpu count"
-  default     = ""
+  default     = null
 }
 
 variable "associate_public_ip_address" {
