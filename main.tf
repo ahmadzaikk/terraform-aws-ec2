@@ -75,7 +75,7 @@ resource "aws_instance" "this" {
   }
   lifecycle {
     # ignore_changes = [ami,ebs_block_device,root_block_device,associate_public_ip_address]
-    ignore_changes = var.ignore_instance_type_change ? ["instance_type"] : []
+    ignore_changes = var.ignore_instance_type_change ? ["instance_type"] : var.ignore_changes
   }
   metadata_options {
     http_endpoint               = "enabled"
