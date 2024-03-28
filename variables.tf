@@ -7,6 +7,11 @@ variable "ignore_instance_type_change" {
   type    = bool
   default = true
 }
+
+variable "ignore_changes" {
+  type    = list(string)
+  default = [ami,associate_public_ip_address]]  # Add other attributes here
+}
 variable "core_count" {
   type        = number
   description = "custom vcpu count"
