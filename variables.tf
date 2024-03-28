@@ -4,6 +4,12 @@ variable "ami" {
   default     = ""
 }
 
+variable "cpu_core_count" {
+  type        = number
+  description = "custom vcpu count"
+  default     = ""
+}
+
 variable "associate_public_ip_address" {
   default     = false
   description = "(Optional) Associate a public ip address with an instance in a VPC. Boolean value."
