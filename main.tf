@@ -73,9 +73,11 @@ resource "aws_instance" "this" {
     encrypted   = var.root_volume_encryption
     tags        = var.tags
   }
-  lifecycle {
-    # ignore_changes = [ami,ebs_block_device,root_block_device,associate_public_ip_address]
-    ignore_changes = var.ignore_instance_type_change ? ["instance_type"] : null
+ dynamic "lifecycle" {
+    for_each = var.ignore_instance_type_change ? [1] : []
+    content {
+      ignore_changes = ["instance_type"]
+    }
   }
   metadata_options {
     http_endpoint               = "enabled"
