@@ -10,7 +10,7 @@ variable "ignore_instance_type_change" {
 
 variable "ignore_changes" {
   type    = list(string)
-  default = ["ami","associate_public_ip_address"]  # Add other attributes here
+  default = ["ami","associate_public_ip_address","instance_type"]  # Add other attributes here
 }
 variable "core_count" {
   type        = number
