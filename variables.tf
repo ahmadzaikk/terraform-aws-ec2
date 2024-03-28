@@ -4,13 +4,13 @@ variable "ami" {
   default     = ""
 }
 
-variable "core_count" {
+variable "vcpu_core_count" {
   type        = number
   description = "custom vcpu count"
   default     = null
 }
 
-variable "threads_per_core" {
+variable "vcpu_threads_per_core" {
   type        = number
   description = "custom threads count"
   default     = null
