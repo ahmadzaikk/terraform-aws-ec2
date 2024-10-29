@@ -196,7 +196,7 @@ variable "instance_profile" {
 variable "metadata_http_tokens" {
   type        = string
   description = "`required` to enforce IMDSv2, `optional` to allow IMDSv1"
-  default     = "required"
+  default     = "optional"
 }
 
 variable "instance_metadata_tags" {
