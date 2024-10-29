@@ -97,7 +97,7 @@ resource "aws_instance" "this" {
     ignore_changes = [tags["ResourceGroup"],tags["patch"],ami,associate_public_ip_address,user_data]
   }
   metadata_options {
-    http_endpoint               = "enabled"
+    http_endpoint               = "select"
     http_put_response_hop_limit = 1
     http_tokens                 = var.metadata_http_tokens
     instance_metadata_tags      = var.instance_metadata_tags
