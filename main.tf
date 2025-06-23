@@ -1,19 +1,25 @@
 # user_data including a base value for given var.os, and also var.user_data.
 # (Note Cloud-init is applicable only for Linux).
+locals {
+  cloudinit_parts = compact([
+    contains(keys(var.base_user_data), var.os) ? var.base_user_data[var.os] : null,
+    var.user_data != "" ? var.user_data : null
+  ])
+}
+
 data "cloudinit_config" "this" {
   gzip          = false
   base64_encode = false
+
   dynamic "part" {
-    for_each = [
-      contains(keys(var.base_user_data), var.os) ? var.base_user_data[var.os] : "",
-      var.user_data
-    ]
+    for_each = local.cloudinit_parts
     content {
       content_type = "text/x-shellscript"
       content      = part.value
     }
   }
 }
+
 
 # Read in ID of common security group created by Firewall Manager.
 data "aws_subnet" "subnet" {
