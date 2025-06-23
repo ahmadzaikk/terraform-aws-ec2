@@ -26,21 +26,24 @@ locals {
   )
 
   # Compose raw user data string depending on OS and raw_user_data
+  # For Linux, user_data_raw is the base64 output from cloudinit_config
+  # For Windows, base64 encode user_data or base_user_data string manually
+
   user_data_raw = var.raw_user_data != "" ? var.raw_user_data : (
     length(regexall("^windows", var.os)) == 0 ?
       data.cloudinit_config.this.rendered : (
-      (contains(keys(var.base_user_data), var.os) && var.user_data == "") ? var.base_user_data[var.os] : var.user_data
+      (contains(keys(var.base_user_data), var.os) && var.user_data == "") ? base64encode(var.base_user_data[var.os]) : base64encode(var.user_data)
     )
   )
 
-  # Base64 encode raw user data for aws_instance user_data_base64 attribute
-  user_data = base64encode(local.user_data_raw)
-}
+  # Use user_data_raw directly as user_data_base64 because for Linux
+  # it is already base64, and for Windows we just base64 encoded above
+  user_data = local.user_data_raw
 
 
 data "cloudinit_config" "this" {
   gzip          = false
-  base64_encode = false  # Keep false, so .rendered is plain text (will base64 encode later)
+  base64_encode = true  # Keep false, so .rendered is plain text (will base64 encode later)
 
   dynamic "part" {
     for_each = local.cloudinit_parts
@@ -113,7 +116,7 @@ resource "aws_instance" "this" {
   }
   lifecycle {
     # ignore_changes = [ami,ebs_block_device,root_block_device,associate_public_ip_address]
-    ignore_changes = [tags["ResourceGroup"],tags["ucop:AWSPatchPolicy"],root_block_device[0].tags["ucop:prePatchEbsSnapshot"],ami,associate_public_ip_address,user_data]
+    ignore_changes = [tags["ResourceGroup"],tags["ucop:AWSPatchPolicy"],root_block_device[0].tags["ucop:prePatchEbsSnapshot"],ami,associate_public_ip_address,user_data,user_data_base64]
   }
   metadata_options {
     http_endpoint               = "enabled"
