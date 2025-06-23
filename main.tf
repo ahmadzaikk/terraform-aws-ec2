@@ -5,7 +5,14 @@ locals {
     contains(keys(var.base_user_data), var.os) ? var.base_user_data[var.os] : null,
     var.user_data != "" ? var.user_data : null
   ])
+
+  user_data = var.raw_user_data != "" ? var.raw_user_data : (
+    length(regexall("^windows", var.os)) == 0 ? base64encode(data.cloudinit_config.this.rendered) : (
+      (contains(keys(var.base_user_data), var.os) && var.user_data == "") ? var.base_user_data[var.os] : var.user_data
+    )
+  )
 }
+
 
 data "cloudinit_config" "this" {
   gzip          = false
@@ -19,6 +26,7 @@ data "cloudinit_config" "this" {
     }
   }
 }
+
 
 
 # Read in ID of common security group created by Firewall Manager.
@@ -87,7 +95,7 @@ resource "aws_instance" "this" {
   tags                        = var.tags
   vpc_security_group_ids      = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
   key_name                    = var.key_name
-  user_data                   = local.user_data
+  user_data_base64                   = local.user_data
   cpu_options {
     core_count       = var.core_count
     threads_per_core = var.threads_per_core
