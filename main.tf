@@ -1,10 +1,27 @@
 # user_data including a base value for given var.os, and also var.user_data.
 # (Note Cloud-init is applicable only for Linux).
 locals {
+  enabled = var.enabled == "true"
+
   cloudinit_parts = compact([
     contains(keys(var.base_user_data), var.os) ? var.base_user_data[var.os] : null,
     var.user_data != "" ? var.user_data : null
   ])
+
+  vcpu_count = coalesce(
+    var.vcpu_count,
+    var.memory_gb != null ? min([for k, v in var.ec2_instance_map : k if contains(keys(v), tostring(var.memory_gb))]...) : 2
+  )
+
+  memory_gb = coalesce(
+    var.memory_gb,
+    var.vcpu_count != null ? min(keys(lookup(var.ec2_instance_map, var.vcpu_count, {}))...) : 1
+  )
+
+  instance_type = coalesce(
+    var.instance_type,
+    lookup(lookup(var.ec2_instance_map, local.vcpu_count, {}), local.memory_gb, "")
+  )
 
   user_data = var.raw_user_data != "" ? var.raw_user_data : (
     length(regexall("^windows", var.os)) == 0 ? base64encode(data.cloudinit_config.this.rendered) : (
@@ -45,28 +62,7 @@ data "aws_security_groups" "fms_security_groups_common_usw2" {
   }
 }
 
-locals {
-  enabled = var.enabled == "true"
-  vcpu_count = coalesce(var.vcpu_count,
-    var.memory_gb != null ? min([for k, v in var.ec2_instance_map : k if contains(keys(v), tostring(var.memory_gb))]...) : 2
-  )
-  memory_gb = coalesce(var.memory_gb,
-    var.vcpu_count != null ? min(keys(lookup(var.ec2_instance_map, var.vcpu_count, {}))...) : 1
-  )
-  instance_type = coalesce(var.instance_type,
-    lookup(lookup(var.ec2_instance_map, local.vcpu_count, {}), local.memory_gb, "")
-  )
 
-  # If var.raw_user_data was provided, use that for user_data.
-  # Else if non-Windows, use cloudinit_config user_data (see above).
-  # Otherwise (for Windows), use var.user_data if defined, else var.base_user_data.
-  # (Ideal to-do: find a way to do merged var.user_data and base_user_data on Windows).
-  user_data = var.raw_user_data != "" ? var.raw_user_data : (
-    length(regexall("^windows", var.os)) == 0 ? data.cloudinit_config.this.rendered : (
-      (contains(keys(var.base_user_data), var.os) && var.user_data == "") ? var.base_user_data[var.os] : var.user_data
-    )
-  )
-}
 
 data "aws_ami" "search" {
   most_recent = true
