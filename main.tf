@@ -3,11 +3,13 @@
 locals {
   enabled = var.enabled == "true"
 
+  # Compose cloud-init parts (shell scripts) - Linux only
   cloudinit_parts = compact([
     contains(keys(var.base_user_data), var.os) ? var.base_user_data[var.os] : null,
     var.user_data != "" ? var.user_data : null
   ])
 
+  # Determine vCPU and memory with fallback logic
   vcpu_count = coalesce(
     var.vcpu_count,
     var.memory_gb != null ? min([for k, v in var.ec2_instance_map : k if contains(keys(v), tostring(var.memory_gb))]...) : 2
@@ -23,18 +25,22 @@ locals {
     lookup(lookup(var.ec2_instance_map, local.vcpu_count, {}), local.memory_gb, "")
   )
 
-  user_data = var.raw_user_data != "" ? var.raw_user_data : (
+  # Compose raw user data string depending on OS and raw_user_data
+  user_data_raw = var.raw_user_data != "" ? var.raw_user_data : (
     length(regexall("^windows", var.os)) == 0 ?
       data.cloudinit_config.this.rendered : (
       (contains(keys(var.base_user_data), var.os) && var.user_data == "") ? var.base_user_data[var.os] : var.user_data
     )
   )
+
+  # Base64 encode raw user data for aws_instance user_data_base64 attribute
+  user_data = base64encode(local.user_data_raw)
 }
 
 
 data "cloudinit_config" "this" {
   gzip          = false
-  base64_encode = false
+  base64_encode = false  # Keep false, so .rendered is plain text (will base64 encode later)
 
   dynamic "part" {
     for_each = local.cloudinit_parts
@@ -92,7 +98,7 @@ resource "aws_instance" "this" {
   tags                        = var.tags
   vpc_security_group_ids      = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
   key_name                    = var.key_name
-  user_data                   = local.user_data
+  user_data_base64                   = local.user_data
   cpu_options {
     core_count       = var.core_count
     threads_per_core = var.threads_per_core
