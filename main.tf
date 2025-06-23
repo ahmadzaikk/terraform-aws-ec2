@@ -39,6 +39,7 @@ locals {
   # Use user_data_raw directly as user_data_base64 because for Linux
   # it is already base64, and for Windows we just base64 encoded above
   user_data = local.user_data_raw
+}
 
 
 data "cloudinit_config" "this" {
