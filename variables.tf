@@ -10,6 +10,12 @@ variable "associate_public_ip_address" {
   type        = bool
 }
 
+variable "private_ips_count" {
+  type        = number
+  description = "Size of the root volume in gigabytes"
+  default     = 0
+}
+
 variable "core_count" {
   type        = number
   description = "custom vcpu count"
