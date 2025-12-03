@@ -10,14 +10,10 @@ variable "associate_public_ip_address" {
   type        = bool
 }
 
-variable "secondary_network_interfaces" {
-  type = list(object({
-    subnet_id       = string
-    private_ips     = optional(list(string), [])
-    private_ips_count = optional(number, 0)
-    security_groups = optional(list(string), [])
-  }))
-  default = []
+variable "private_ips_count" {
+  type        = number
+  description = "Size of the root volume in gigabytes"
+  default     = 0
 }
 
 
