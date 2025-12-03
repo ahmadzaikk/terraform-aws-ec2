@@ -71,7 +71,7 @@ data "aws_ami" "search" {
 resource "aws_instance" "this" {
   count                       = local.enabled ? 1 : 0
   ami                         = var.ami != "" ? var.ami : data.aws_ami.search.id
-  associate_public_ip_address = var.associate_public_ip_address
+  #associate_public_ip_address = var.associate_public_ip_address
   disable_api_termination     = var.disable_api_termination
   ebs_optimized               = var.ebs_optimized
   iam_instance_profile        = var.instance_profile
