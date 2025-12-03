@@ -1,9 +1,14 @@
-resource "aws_network_interface" "this" {
-  subnet_id       = var.subnet_id
-  security_groups = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
-  private_ips_count = var.secondary_private_ips
+locals {
+  eni_mode = var.secondary_private_ips > 0
 }
 
+resource "aws_network_interface" "this" {
+  count             = local.eni_mode ? 1 : 0
+  subnet_id         = var.subnet_id
+  security_groups   = var.vpc_security_group_ids
+  private_ips_count = var.secondary_private_ips
+  tags              = var.tags
+}
 
 
 # user_data including a base value for given var.os, and also var.user_data.
@@ -79,23 +84,26 @@ data "aws_ami" "search" {
 resource "aws_instance" "this" {
   count                       = local.enabled ? 1 : 0
   ami                         = var.ami != "" ? var.ami : data.aws_ami.search.id
-  #associate_public_ip_address = var.associate_public_ip_address
+  associate_public_ip_address = local.eni_mode ? null : var.associate_public_ip_address
   disable_api_termination     = var.disable_api_termination
   ebs_optimized               = var.ebs_optimized
   iam_instance_profile        = var.instance_profile
   instance_type               = local.instance_type
   monitoring                  = var.monitoring
-  #subnet_id                   = var.subnet_id
+  subnet_id                  = local.eni_mode ? null : var.subnet_id
   tags                        = var.tags
-  #vpc_security_group_ids      = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
+  vpc_security_group_ids = local.eni_mode ? null : concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
   key_name                    = var.key_name
   user_data                   = local.user_data
-  network_interface {
-  network_interface_id = aws_network_interface.this.id
-  device_index = 0
-}
-
-
+  # ENI mode networking
+  dynamic "network_interface" {
+    for_each = local.eni_mode ? [1] : []
+    content {
+      network_interface_id = try(aws_network_interface.this[0].id, null)
+      device_index         = 0
+    }
+  }
+  
   cpu_options {
     core_count       = var.core_count
     threads_per_core = var.threads_per_core
