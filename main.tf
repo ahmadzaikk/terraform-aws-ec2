@@ -83,7 +83,7 @@ resource "aws_instance" "this" {
   key_name                    = var.key_name
   user_data                   = local.user_data
   network_interface {
-    network_interface_id = aws_network_interface.secondary[0].id
+    network_interface_id = length(aws_network_interface.secondary) > 0 ? aws_network_interface.secondary[0].id : null
     device_index         = 1
   }
   cpu_options {
@@ -344,12 +344,13 @@ resource "aws_volume_attachment" "attachment9" {
 }
 
 resource "aws_network_interface" "secondary" {
-  count       = length(var.secondary_private_ips) > 0 ? 1 : 0
-  subnet_id   = var.subnet_id
-  private_ips = var.secondary_private_ips
-  security_groups = var.vpc_security_group_ids
-  tags = merge(var.tags, { Name = "secondary-eni" })
+  count            = var.secondary_private_ips > 0 ? 1 : 0
+  subnet_id        = var.subnet_id
+  security_groups  = var.vpc_security_group_ids
+  private_ips_count = var.secondary_private_ips
+  tags             = merge(var.tags, { Name = "secondary-eni" })
 }
+
 
 
 
