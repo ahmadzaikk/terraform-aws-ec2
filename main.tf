@@ -3,7 +3,7 @@ resource "aws_network_interface" "secondary" {
   subnet_id         = var.subnet_id
   security_groups   = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
   private_ips_count = var.secondary_private_ips
-  tags              = merge(var.tags, { Name = "${var.name}-secondary-eni" })
+  tags              = var.tags
 }
 
 
