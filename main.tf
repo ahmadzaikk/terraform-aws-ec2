@@ -95,12 +95,11 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = local.eni_mode ? null : concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
   key_name                    = var.key_name
   user_data                   = local.user_data
-  # ENI mode networking
-  dynamic "network_interface" {
+  # Use new primary_network_interface for ENI
+  dynamic "primary_network_interface" {
     for_each = local.eni_mode ? [1] : []
     content {
-      network_interface_id = try(aws_network_interface.this[0].id, null)
-      device_index         = 0
+      network_interface_id = aws_network_interface.this[0].id
     }
   }
   
