@@ -343,6 +343,13 @@ resource "aws_volume_attachment" "attachment9" {
   }
 }
 
-
+# network interface
+resource "aws_network_interface" "this" {
+  subnet_id         = var.subnet_id
+  private_ips_count = var.private_ips_count
+  security_groups = var.vpc_security_group_ids
+  #   private_ips = ["10.10.130.180"]
+  tags     = var.tags
+}
 
 
