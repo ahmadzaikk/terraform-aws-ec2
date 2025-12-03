@@ -10,10 +10,10 @@ variable "associate_public_ip_address" {
   type        = bool
 }
 
-variable "private_ips_count" {
-  type        = number
-  description = "Size of the root volume in gigabytes"
-  default     = 0
+variable "secondary_private_ips" {
+  type        = list(string)
+  default     = []
+  description = "List of secondary private IPs to assign to the instance's secondary network interface(s)"
 }
 
 
