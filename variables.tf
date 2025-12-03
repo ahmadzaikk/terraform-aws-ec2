@@ -18,7 +18,6 @@ variable "secondary_network_interfaces" {
     security_groups = optional(list(string), [])
   }))
   default = []
-  description = "List of secondary ENIs to attach to the instance"
 }
 
 
