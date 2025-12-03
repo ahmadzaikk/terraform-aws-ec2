@@ -82,10 +82,6 @@ resource "aws_instance" "this" {
   vpc_security_group_ids      = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
   key_name                    = var.key_name
   user_data                   = local.user_data
-  network_interface {
-    network_interface_id  = aws_network_interface.this.id
-    device_index          = 1
-  }
   cpu_options {
     core_count       = var.core_count
     threads_per_core = var.threads_per_core
@@ -341,12 +337,4 @@ resource "aws_volume_attachment" "attachment9" {
   lifecycle {
     ignore_changes = [instance_id,volume_id]
   }
-}
-# network interface
-resource "aws_network_interface" "this" {
-  subnet_id         = var.subnet_id
-  private_ips_count = var.private_ips_count
-  security_groups = var.vpc_security_group_ids
-  #   private_ips = ["10.10.130.180"]
-  tags     = var.tags
 }
