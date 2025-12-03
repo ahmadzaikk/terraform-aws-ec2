@@ -88,7 +88,7 @@ resource "aws_instance" "this" {
   }
   network_interface {
     network_interface_id = aws_network_interface.this.id
-    device_index         = 0
+    device_index         = 1
   }
 
   root_block_device {
@@ -343,22 +343,6 @@ resource "aws_volume_attachment" "attachment9" {
   }
 }
 
-resource "aws_network_interface" "secondary" {
-  for_each = { for idx, eni in var.secondary_network_interfaces : idx => eni }
 
-  subnet_id         = each.value.subnet_id
-  private_ips       = lookup(each.value, "private_ips", null)
-  private_ips_count = lookup(each.value, "private_ips_count", 0)
-  security_groups   = length(lookup(each.value, "security_groups", [])) > 0 ? each.value.security_groups : var.vpc_security_group_ids
-  tags              = merge(var.tags, { Name = "secondary-eni-${each.key}" })
-}
-
-resource "aws_network_interface_attachment" "secondary" {
-  for_each = aws_network_interface.secondary
-
-  instance_id          = aws_instance.this[0].id
-  device_index         = each.key + 1  # starts at 1 (0 is primary)
-  network_interface_id = each.value.id
-}
 
 
