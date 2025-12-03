@@ -1,10 +1,9 @@
-resource "aws_network_interface" "secondary" {
-  count             = var.secondary_private_ips > 0 ? 1 : 0
-  subnet_id         = var.subnet_id
-  security_groups   = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
-  private_ips_count = var.secondary_private_ips
-  tags              = var.tags
+resource "aws_network_interface" "this" {
+  subnet_id       = var.subnet_id
+  security_groups = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
+  private_ips_count = ...
 }
+
 
 
 # user_data including a base value for given var.os, and also var.user_data.
@@ -80,21 +79,22 @@ data "aws_ami" "search" {
 resource "aws_instance" "this" {
   count                       = local.enabled ? 1 : 0
   ami                         = var.ami != "" ? var.ami : data.aws_ami.search.id
-  associate_public_ip_address = var.associate_public_ip_address
+  #associate_public_ip_address = var.associate_public_ip_address
   disable_api_termination     = var.disable_api_termination
   ebs_optimized               = var.ebs_optimized
   iam_instance_profile        = var.instance_profile
   instance_type               = local.instance_type
   monitoring                  = var.monitoring
-  subnet_id                   = var.subnet_id
+  #subnet_id                   = var.subnet_id
   tags                        = var.tags
-  vpc_security_group_ids      = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
+  #vpc_security_group_ids      = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
   key_name                    = var.key_name
   user_data                   = local.user_data
   network_interface {
-    network_interface_id = length(aws_network_interface.secondary) > 0 ? aws_network_interface.secondary[0].id : null
-    device_index         = 1
-  }
+  network_interface_id = aws_network_interface.this.id
+  device_index = 0
+}
+
 
   cpu_options {
     core_count       = var.core_count
@@ -113,9 +113,7 @@ resource "aws_instance" "this" {
     # ignore_changes = [ami,ebs_block_device,root_block_device,associate_public_ip_address]
     ignore_changes = [tags["ResourceGroup"],tags["ucop:AWSPatchPolicy"],root_block_device[0].tags["ucop:prePatchEbsSnapshot"],ami,associate_public_ip_address,user_data]
   }
-  depends_on = [
-    aws_network_interface.secondary
-  ]
+  
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
