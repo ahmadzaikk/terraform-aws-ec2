@@ -1,3 +1,12 @@
+resource "aws_network_interface" "secondary" {
+  count             = var.secondary_private_ips > 0 ? 1 : 0
+  subnet_id         = var.subnet_id
+  security_groups   = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
+  private_ips_count = var.secondary_private_ips
+  tags              = merge(var.tags, { Name = "${var.name}-secondary-eni" })
+}
+
+
 # user_data including a base value for given var.os, and also var.user_data.
 # (Note Cloud-init is applicable only for Linux).
 data "cloudinit_config" "this" {
@@ -86,6 +95,7 @@ resource "aws_instance" "this" {
     network_interface_id = length(aws_network_interface.secondary) > 0 ? aws_network_interface.secondary[0].id : null
     device_index         = 1
   }
+
   cpu_options {
     core_count       = var.core_count
     threads_per_core = var.threads_per_core
@@ -103,6 +113,9 @@ resource "aws_instance" "this" {
     # ignore_changes = [ami,ebs_block_device,root_block_device,associate_public_ip_address]
     ignore_changes = [tags["ResourceGroup"],tags["ucop:AWSPatchPolicy"],root_block_device[0].tags["ucop:prePatchEbsSnapshot"],ami,associate_public_ip_address,user_data]
   }
+  depends_on = [
+    aws_network_interface.secondary
+  ]
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
@@ -343,13 +356,7 @@ resource "aws_volume_attachment" "attachment9" {
   }
 }
 
-resource "aws_network_interface" "secondary" {
-  count            = var.secondary_private_ips > 0 ? 1 : 0
-  subnet_id        = var.subnet_id
-  security_groups  = var.vpc_security_group_ids
-  private_ips_count = var.secondary_private_ips
-  tags             = merge(var.tags, { Name = "secondary-eni" })
-}
+
 
 
 
