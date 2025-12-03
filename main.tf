@@ -1,7 +1,7 @@
 resource "aws_network_interface" "this" {
   subnet_id       = var.subnet_id
   security_groups = concat(var.vpc_security_group_ids, data.aws_security_groups.fms_security_groups_common_usw2.ids)
-  private_ips_count = ...
+  private_ips_count = var.secondary_private_ips
 }
 
 
