@@ -11,10 +11,11 @@ variable "associate_public_ip_address" {
 }
 
 variable "secondary_private_ips" {
-  type        = list(string)
-  default     = []
-  description = "List of secondary private IPs to assign to the instance's secondary network interface(s)"
+  type        = number
+  default     = 0
+  description = "Number of secondary private IPs to assign to a secondary ENI"
 }
+
 
 
 variable "core_count" {
