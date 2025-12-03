@@ -8,15 +8,6 @@ resource "aws_network_interface" "this" {
   security_groups   = var.vpc_security_group_ids
   private_ips_count = var.secondary_private_ips
   tags              = var.tags
-
-  # Ensure the instance is destroyed first
-  lifecycle {
-    prevent_destroy = false
-  }
-
-  depends_on = [
-    aws_instance.this
-  ]
 }
 
 
