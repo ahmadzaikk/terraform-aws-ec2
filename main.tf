@@ -84,7 +84,7 @@ resource "aws_instance" "this" {
   user_data                   = local.user_data
   network_interface {
     network_interface_id  = aws_network_interface.this.id
-    device_index          = 0
+    device_index          = 1
   }
   cpu_options {
     core_count       = var.core_count
